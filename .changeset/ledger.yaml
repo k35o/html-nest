@@ -2,3 +2,7 @@
   dir: ""
   intents:
     - initial-release
+"@k8o/html-nest@0.1.1":
+  dir: ""
+  intents:
+    - readme-badge-and-versions
