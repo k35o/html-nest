@@ -1,13 +1,17 @@
-import type { HtmlElementInfo } from './types';
+import type { ElementDescription, HtmlElementInfo } from './types';
 
 // Element data sourced from the WHATWG HTML Living Standard elements index:
 // each element's content categories, content model (children), and contexts
 // (parents) in structured form. Generated with tooling assistance and
 // corrected by hand. See HTML_ELEMENT_TAGS for the list of covered tags.
+//
+// Structure only: the English display strings (description and the note
+// fields) live in ./descriptions and are merged in with
+// applyElementDescriptions, so bundles that localize or never render them
+// do not ship them.
 export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   {
     tag: 'a',
-    description: 'Anchor element representing a hyperlink',
     categories: ['flow', 'phrasing', 'palpable'],
     conditionalCategories: ['interactive'],
     contentModel: {
@@ -16,14 +20,12 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
       elements: [],
       excludedCategories: ['interactive'],
       excludedElements: ['a'],
-      note: "Follows the parent's content model. Must not contain interactive content, a elements, or elements with a tabindex attribute among its descendants",
     },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 'abbr',
-    description: 'Abbreviation or acronym',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -31,7 +33,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'address',
-    description: 'Contact information',
     categories: ['flow', 'palpable'],
     contentModel: {
       kind: 'elements',
@@ -39,29 +40,20 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
       elements: [],
       excludedCategories: ['heading', 'sectioning'],
       excludedElements: ['header', 'footer', 'address'],
-      note: 'Must not contain heading content, sectioning content, header, footer, or address descendants',
     },
     contexts: { categories: ['flow'], elements: [] },
     void: false,
   },
   {
     tag: 'area',
-    description: 'Region on an image map',
     categories: [],
     conditionalCategories: ['flow', 'phrasing'],
-    conditionalNote: 'Only if there is a map element ancestor',
     contentModel: { kind: 'empty', categories: [], elements: [] },
-    contexts: {
-      categories: [],
-      elements: [],
-      conditionalElements: ['map'],
-      note: 'Must be a descendant of a map element',
-    },
+    contexts: { categories: [], elements: [], conditionalElements: ['map'] },
     void: true,
   },
   {
     tag: 'article',
-    description: 'Self-contained, independently distributable composition',
     categories: ['flow', 'sectioning', 'palpable'],
     contentModel: { kind: 'elements', categories: ['flow'], elements: [] },
     contexts: { categories: ['flow'], elements: [] },
@@ -69,7 +61,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'aside',
-    description: 'Content tangentially related to the surrounding content',
     categories: ['flow', 'sectioning', 'palpable'],
     contentModel: { kind: 'elements', categories: ['flow'], elements: [] },
     contexts: { categories: ['flow'], elements: [] },
@@ -77,7 +68,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'audio',
-    description: 'Embedded sound or audio stream',
     categories: ['flow', 'phrasing', 'embedded'],
     conditionalCategories: ['interactive', 'palpable'],
     contentModel: {
@@ -86,14 +76,12 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
       elements: ['track'],
       conditionalElements: ['source'],
       excludedElements: ['audio', 'video'],
-      note: "Follows the parent's content model. Source elements only when there is no src attribute; track elements either way; no media element descendants",
     },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 'b',
-    description: 'Text to which attention is being drawn',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -101,7 +89,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'base',
-    description: 'Base URL and default link target for the document',
     categories: ['metadata'],
     contentModel: { kind: 'empty', categories: [], elements: [] },
     contexts: { categories: [], elements: ['head'] },
@@ -109,7 +96,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'bdi',
-    description: 'Text isolated for bidirectional formatting',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -117,7 +103,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'bdo',
-    description: 'Explicit text directionality override',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -125,7 +110,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'blockquote',
-    description: 'Section quoted from another source',
     categories: ['flow', 'palpable'],
     contentModel: { kind: 'elements', categories: ['flow'], elements: [] },
     contexts: { categories: ['flow'], elements: [] },
@@ -133,19 +117,13 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'body',
-    description: 'Main content of the document, directly under the root',
     categories: [],
     contentModel: { kind: 'elements', categories: ['flow'], elements: [] },
-    contexts: {
-      categories: [],
-      elements: ['html'],
-      note: 'Second child of the html element',
-    },
+    contexts: { categories: [], elements: ['html'] },
     void: false,
   },
   {
     tag: 'br',
-    description: 'Line break',
     categories: ['flow', 'phrasing'],
     contentModel: { kind: 'empty', categories: [], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -153,7 +131,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'button',
-    description: 'Clickable button',
     categories: ['flow', 'phrasing', 'interactive', 'palpable'],
     formCategories: ['listed', 'labelable', 'submittable', 'form-associated'],
     contentModel: {
@@ -161,46 +138,36 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
       categories: ['phrasing'],
       elements: [],
       excludedCategories: ['interactive'],
-      note: 'Phrasing content with no interactive content descendants',
     },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 'canvas',
-    description: 'Scriptable resolution-dependent bitmap canvas',
     categories: ['flow', 'phrasing', 'embedded', 'palpable'],
     contentModel: {
       kind: 'transparent',
       categories: [],
       elements: [],
       excludedElements: ['details', 'embed', 'iframe', 'label', 'textarea'],
-      note: "Follows the parent's content model (transparent). Interactive content is not allowed in fallback content, except a, button, select, img with usemap, and checkbox/radio/button inputs",
     },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 'caption',
-    description: 'Title or caption of a table',
     categories: [],
     contentModel: {
       kind: 'elements',
       categories: ['flow'],
       elements: [],
       excludedElements: ['table'],
-      note: 'Flow content with no table element descendants',
     },
-    contexts: {
-      categories: [],
-      elements: ['table'],
-      note: 'First child of a table element',
-    },
+    contexts: { categories: [], elements: ['table'] },
     void: false,
   },
   {
     tag: 'cite',
-    description: 'Title of a work',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -208,7 +175,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'code',
-    description: 'Fragment of computer code',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -216,34 +182,29 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'col',
-    description: 'Table column',
     categories: [],
     contentModel: { kind: 'empty', categories: [], elements: [] },
     contexts: {
       categories: [],
       elements: [],
       conditionalElements: ['colgroup'],
-      note: 'Child of a colgroup element that has no span attribute',
     },
     void: true,
   },
   {
     tag: 'colgroup',
-    description: 'Group of table columns',
     categories: [],
     contentModel: {
       kind: 'elements',
       categories: [],
       elements: [],
       conditionalElements: ['col', 'template'],
-      note: 'When it has no span attribute: col and template elements',
     },
     contexts: { categories: [], elements: ['table'] },
     void: false,
   },
   {
     tag: 'data',
-    description: 'Content with a machine-readable value',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -251,7 +212,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'datalist',
-    description: 'Predefined options for other controls',
     categories: ['flow', 'phrasing'],
     contentModel: {
       kind: 'elements',
@@ -259,40 +219,30 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
       elements: [],
       conditionalCategories: ['script-supporting'],
       conditionalElements: ['option'],
-      note: 'Either phrasing content, or option elements mixed with script-supporting elements',
     },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 'dd',
-    description: 'Description or value in a description list',
     categories: [],
     contentModel: { kind: 'elements', categories: ['flow'], elements: [] },
     contexts: {
       categories: [],
       elements: ['dl'],
       conditionalElements: ['div'],
-      note: 'Inside a div, only if the div is a child of a dl element',
     },
     void: false,
   },
   {
     tag: 'del',
-    description: 'Content removed from the document',
     categories: ['flow', 'phrasing', 'palpable'],
-    contentModel: {
-      kind: 'transparent',
-      categories: [],
-      elements: [],
-      note: "Follows the parent's content model",
-    },
+    contentModel: { kind: 'transparent', categories: [], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 'details',
-    description: 'Disclosure widget that can be opened and closed',
     categories: ['flow', 'interactive', 'palpable'],
     contentModel: {
       kind: 'elements',
@@ -304,21 +254,18 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'dfn',
-    description: 'Defining instance of a term',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: {
       kind: 'elements',
       categories: ['phrasing'],
       elements: [],
       excludedElements: ['dfn'],
-      note: 'Phrasing content with no dfn element descendants',
     },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 'dialog',
-    description: 'Dialog box or subwindow',
     categories: ['flow'],
     contentModel: { kind: 'elements', categories: ['flow'], elements: [] },
     contexts: { categories: ['flow'], elements: [] },
@@ -326,23 +273,13 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'div',
-    description: 'Generic block-level container',
     categories: ['flow', 'palpable'],
-    contentModel: {
-      kind: 'elements',
-      categories: ['flow'],
-      elements: [],
-    },
-    contexts: {
-      categories: ['flow'],
-      elements: ['dl'],
-      note: 'Also allowed inside select, optgroup, and option as a wrapper',
-    },
+    contentModel: { kind: 'elements', categories: ['flow'], elements: [] },
+    contexts: { categories: ['flow'], elements: ['dl'] },
     void: false,
   },
   {
     tag: 'dl',
-    description: 'Description list of name-value groups',
     categories: ['flow'],
     conditionalCategories: ['palpable'],
     contentModel: {
@@ -355,7 +292,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'dt',
-    description: 'Name or term in a description list',
     categories: [],
     contentModel: {
       kind: 'elements',
@@ -363,19 +299,16 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
       elements: [],
       excludedCategories: ['heading', 'sectioning'],
       excludedElements: ['header', 'footer'],
-      note: 'Flow content with no header, footer, sectioning content, or heading content descendants',
     },
     contexts: {
       categories: [],
       elements: ['dl'],
       conditionalElements: ['div'],
-      note: 'Inside a div, only if the div is a child of a dl element',
     },
     void: false,
   },
   {
     tag: 'em',
-    description: 'Stress emphasis',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -383,7 +316,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'embed',
-    description: 'Integration point for an external application or plugin',
     categories: ['flow', 'phrasing', 'embedded', 'interactive', 'palpable'],
     contentModel: { kind: 'empty', categories: [], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -391,7 +323,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'fieldset',
-    description: 'Group of form controls',
     categories: ['flow', 'palpable'],
     formCategories: ['listed', 'form-associated'],
     contentModel: {
@@ -404,7 +335,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'figcaption',
-    description: 'Caption or legend for a figure',
     categories: [],
     contentModel: { kind: 'elements', categories: ['flow'], elements: [] },
     contexts: { categories: [], elements: ['figure'] },
@@ -412,7 +342,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'figure',
-    description: 'Self-contained content with an optional caption',
     categories: ['flow', 'palpable'],
     contentModel: {
       kind: 'elements',
@@ -424,36 +353,30 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'footer',
-    description:
-      'Footer for its section: authorship, related links, and similar',
     categories: ['flow', 'palpable'],
     contentModel: {
       kind: 'elements',
       categories: ['flow'],
       elements: [],
       excludedElements: ['header', 'footer'],
-      note: 'Must not contain header or footer descendants',
     },
     contexts: { categories: ['flow'], elements: [] },
     void: false,
   },
   {
     tag: 'form',
-    description: 'Form with submittable controls',
     categories: ['flow', 'palpable'],
     contentModel: {
       kind: 'elements',
       categories: ['flow'],
       elements: [],
       excludedElements: ['form'],
-      note: 'Must not contain form element descendants',
     },
     contexts: { categories: ['flow'], elements: [] },
     void: false,
   },
   {
     tag: 'h1',
-    description: 'Heading level 1 (highest)',
     categories: ['flow', 'heading', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['flow'], elements: ['legend', 'summary'] },
@@ -461,7 +384,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'h2',
-    description: 'Heading level 2',
     categories: ['flow', 'heading', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['flow'], elements: ['legend', 'summary'] },
@@ -469,7 +391,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'h3',
-    description: 'Heading level 3',
     categories: ['flow', 'heading', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['flow'], elements: ['legend', 'summary'] },
@@ -477,7 +398,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'h4',
-    description: 'Heading level 4',
     categories: ['flow', 'heading', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['flow'], elements: ['legend', 'summary'] },
@@ -485,7 +405,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'h5',
-    description: 'Heading level 5',
     categories: ['flow', 'heading', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['flow'], elements: ['legend', 'summary'] },
@@ -493,7 +412,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'h6',
-    description: 'Heading level 6 (lowest)',
     categories: ['flow', 'heading', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['flow'], elements: ['legend', 'summary'] },
@@ -501,33 +419,25 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'head',
-    description: 'Container for document metadata',
     categories: [],
-    contentModel: {
-      kind: 'elements',
-      categories: ['metadata'],
-      elements: [],
-    },
+    contentModel: { kind: 'elements', categories: ['metadata'], elements: [] },
     contexts: { categories: [], elements: ['html'] },
     void: false,
   },
   {
     tag: 'header',
-    description: 'Introductory content or navigation aids for its section',
     categories: ['flow', 'palpable'],
     contentModel: {
       kind: 'elements',
       categories: ['flow'],
       elements: [],
       excludedElements: ['header', 'footer'],
-      note: 'Must not contain header or footer descendants',
     },
     contexts: { categories: ['flow'], elements: [] },
     void: false,
   },
   {
     tag: 'hgroup',
-    description: 'Heading grouped with subheadings',
     categories: ['flow', 'heading', 'palpable'],
     contentModel: {
       kind: 'elements',
@@ -539,36 +449,24 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'hr',
-    description: 'Paragraph-level thematic break',
     categories: ['flow'],
     contentModel: { kind: 'empty', categories: [], elements: [] },
-    contexts: {
-      categories: ['flow'],
-      elements: [],
-      note: 'Also allowed inside select as a separator',
-    },
+    contexts: { categories: ['flow'], elements: [] },
     void: true,
   },
   {
     tag: 'html',
-    description: 'Root element of an HTML document; contains head and body',
     categories: [],
     contentModel: {
       kind: 'elements',
       categories: [],
       elements: ['head', 'body'],
     },
-    contexts: {
-      categories: [],
-      elements: [],
-      special: 'root',
-      note: 'Root element',
-    },
+    contexts: { categories: [], elements: [], special: 'root' },
     void: false,
   },
   {
     tag: 'i',
-    description: 'Text in an alternate voice or mood (idiomatic text)',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -576,20 +474,13 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'iframe',
-    description: 'Nested browsing context (inline frame)',
     categories: ['flow', 'phrasing', 'embedded', 'interactive', 'palpable'],
-    contentModel: {
-      kind: 'none',
-      categories: [],
-      elements: [],
-      note: 'Nothing; iframe is not a void element and requires an end tag',
-    },
+    contentModel: { kind: 'none', categories: [], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 'img',
-    description: 'Embedded image',
     categories: ['flow', 'phrasing', 'embedded', 'palpable'],
     conditionalCategories: ['interactive'],
     formCategories: ['form-associated'],
@@ -599,7 +490,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'input',
-    description: 'Form input control',
     categories: ['flow', 'phrasing'],
     conditionalCategories: ['interactive', 'palpable'],
     formCategories: [
@@ -615,20 +505,13 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'ins',
-    description: 'Content added to the document',
     categories: ['flow', 'phrasing', 'palpable'],
-    contentModel: {
-      kind: 'transparent',
-      categories: [],
-      elements: [],
-      note: "Follows the parent's content model",
-    },
+    contentModel: { kind: 'transparent', categories: [], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 'kbd',
-    description: 'User input, such as keyboard input',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -636,21 +519,18 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'label',
-    description: 'Caption for a form control',
     categories: ['flow', 'phrasing', 'interactive', 'palpable'],
     contentModel: {
       kind: 'elements',
       categories: ['phrasing'],
       elements: [],
       excludedElements: ['label'],
-      note: 'Phrasing content with no label element descendants, and no labelable descendants other than the labeled control',
     },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 'legend',
-    description: 'Caption for a fieldset',
     categories: [],
     contentModel: {
       kind: 'elements',
@@ -662,22 +542,15 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'li',
-    description: 'List item',
     categories: [],
     contentModel: { kind: 'elements', categories: ['flow'], elements: [] },
-    contexts: {
-      categories: [],
-      elements: ['ol', 'ul', 'menu'],
-    },
+    contexts: { categories: [], elements: ['ol', 'ul', 'menu'] },
     void: false,
   },
   {
     tag: 'link',
-    description: 'Link to an external resource (metadata)',
     categories: ['metadata'],
     conditionalCategories: ['flow', 'phrasing'],
-    conditionalNote:
-      'When it has an itemprop attribute, or rel consists only of body-ok keywords (stylesheet, preload, preconnect, ...); it may then appear in the body',
     contentModel: { kind: 'empty', categories: [], elements: [] },
     contexts: {
       categories: [],
@@ -688,31 +561,21 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'main',
-    description: 'Dominant content of the document',
     categories: ['palpable'],
     conditionalCategories: ['flow'],
-    conditionalNote:
-      'Only if it is a hierarchically correct main element (ancestors limited to html, body, div, form without an accessible name, and autonomous custom elements)',
     contentModel: { kind: 'elements', categories: ['flow'], elements: [] },
     contexts: { categories: ['flow'], elements: [] },
     void: false,
   },
   {
     tag: 'map',
-    description: 'Image map definition with clickable areas',
     categories: ['flow', 'phrasing', 'palpable'],
-    contentModel: {
-      kind: 'transparent',
-      categories: [],
-      elements: ['area'],
-      note: "Follows the parent's content model. May contain area element descendants",
-    },
+    contentModel: { kind: 'transparent', categories: [], elements: ['area'] },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 'mark',
-    description: 'Text highlighted for reference or notation',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -720,20 +583,13 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'math',
-    description: 'Root of a MathML mathematical expression',
     categories: ['flow', 'phrasing', 'embedded', 'palpable'],
-    contentModel: {
-      kind: 'foreign',
-      categories: [],
-      elements: [],
-      note: 'MathML foreign content',
-    },
+    contentModel: { kind: 'foreign', categories: [], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 'menu',
-    description: 'Toolbar-like list of commands',
     categories: ['flow'],
     conditionalCategories: ['palpable'],
     contentModel: {
@@ -746,23 +602,18 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'meta',
-    description: 'Document metadata',
     categories: ['metadata'],
     conditionalCategories: ['flow', 'phrasing'],
-    conditionalNote:
-      'When it has an itemprop attribute (microdata); it may then appear in the body',
     contentModel: { kind: 'empty', categories: [], elements: [] },
     contexts: {
       categories: [],
       elements: ['head'],
       conditionalElements: ['noscript'],
-      note: 'Inside noscript, or in phrasing contexts in some cases',
     },
     void: true,
   },
   {
     tag: 'meter',
-    description: 'Gauge for a scalar value within a known range',
     categories: ['flow', 'phrasing', 'palpable'],
     formCategories: ['labelable'],
     contentModel: {
@@ -770,14 +621,12 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
       categories: ['phrasing'],
       elements: [],
       excludedElements: ['meter'],
-      note: 'Phrasing content with no meter element descendants',
     },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 'nav',
-    description: 'Section of navigation links',
     categories: ['flow', 'sectioning', 'palpable'],
     contentModel: { kind: 'elements', categories: ['flow'], elements: [] },
     contexts: { categories: ['flow'], elements: [] },
@@ -785,7 +634,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'noscript',
-    description: 'Fallback content for when scripting is disabled',
     categories: ['metadata', 'flow', 'phrasing'],
     contentModel: {
       kind: 'varies',
@@ -793,34 +641,21 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
       elements: [],
       conditionalCategories: ['flow', 'phrasing'],
       excludedElements: ['noscript'],
-      note: 'In head (scripting disabled): link, style, and meta elements. Outside head (scripting disabled): transparent with no noscript descendants. When scripting is enabled: text',
     },
-    contexts: {
-      categories: [],
-      elements: [],
-      conditionalElements: ['head'],
-      note: 'Inside head, or in phrasing contexts in some cases',
-    },
+    contexts: { categories: [], elements: [], conditionalElements: ['head'] },
     void: false,
   },
   {
     tag: 'object',
-    description: 'External resource such as an image or nested document',
     categories: ['flow', 'phrasing', 'embedded', 'palpable'],
     conditionalCategories: ['interactive'],
     formCategories: ['listed', 'form-associated'],
-    contentModel: {
-      kind: 'transparent',
-      categories: [],
-      elements: [],
-      note: "Follows the parent's content model",
-    },
+    contentModel: { kind: 'transparent', categories: [], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 'ol',
-    description: 'Ordered list',
     categories: ['flow'],
     conditionalCategories: ['palpable'],
     contentModel: {
@@ -833,7 +668,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'optgroup',
-    description: 'Group of options inside a select',
     categories: [],
     contentModel: {
       kind: 'elements',
@@ -849,7 +683,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'option',
-    description: 'Option in a select, datalist, or optgroup',
     categories: [],
     contentModel: {
       kind: 'text',
@@ -859,7 +692,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
       conditionalElements: ['div'],
       excludedCategories: ['interactive'],
       excludedElements: ['datalist', 'object'],
-      note: 'Text; or, without a label attribute and outside datalist, div elements and phrasing content with no interactive, datalist, or object descendants',
     },
     contexts: {
       categories: [],
@@ -870,7 +702,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'output',
-    description: 'Result of a calculation',
     categories: ['flow', 'phrasing', 'palpable'],
     formCategories: ['listed', 'labelable', 'resettable', 'form-associated'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
@@ -879,7 +710,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'p',
-    description: 'Paragraph',
     categories: ['flow', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['flow'], elements: [] },
@@ -887,7 +717,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'picture',
-    description: 'Container offering multiple image sources',
     categories: ['flow', 'phrasing', 'embedded', 'palpable'],
     contentModel: {
       kind: 'elements',
@@ -899,7 +728,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'pre',
-    description: 'Preformatted text',
     categories: ['flow', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['flow'], elements: [] },
@@ -907,7 +735,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'progress',
-    description: 'Progress of a task',
     categories: ['flow', 'phrasing', 'palpable'],
     formCategories: ['labelable'],
     contentModel: {
@@ -915,14 +742,12 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
       categories: ['phrasing'],
       elements: [],
       excludedElements: ['progress'],
-      note: 'Phrasing content with no progress element descendants',
     },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 'q',
-    description: 'Short inline quotation',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -930,7 +755,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'rp',
-    description: 'Fallback parentheses for browsers without ruby support',
     categories: [],
     contentModel: { kind: 'text', categories: [], elements: [] },
     contexts: { categories: [], elements: ['ruby'] },
@@ -938,7 +762,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'rt',
-    description: 'Ruby text annotation',
     categories: [],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: [], elements: ['ruby'] },
@@ -946,20 +769,17 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'ruby',
-    description: 'Ruby annotation',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: {
       kind: 'elements',
       categories: ['phrasing'],
       elements: ['rt', 'rp'],
-      note: 'The full prose model also restricts ruby descendants (at most one directly nested ruby, with no deeper nesting)',
     },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 's',
-    description: 'Content that is no longer accurate (strikethrough)',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -967,7 +787,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'samp',
-    description: 'Sample output from a program',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -975,14 +794,8 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'script',
-    description: 'Embedded script or data',
     categories: ['metadata', 'flow', 'phrasing', 'script-supporting'],
-    contentModel: {
-      kind: 'text',
-      categories: [],
-      elements: [],
-      note: 'Script such as JavaScript, or data',
-    },
+    contentModel: { kind: 'text', categories: [], elements: [] },
     contexts: {
       categories: ['phrasing', 'script-supporting'],
       elements: ['head'],
@@ -991,7 +804,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'search',
-    description: 'Region for search or filtering controls',
     categories: ['flow', 'palpable'],
     contentModel: { kind: 'elements', categories: ['flow'], elements: [] },
     contexts: { categories: ['flow'], elements: [] },
@@ -999,7 +811,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'section',
-    description: 'Generic section with a heading',
     categories: ['flow', 'sectioning', 'palpable'],
     contentModel: { kind: 'elements', categories: ['flow'], elements: [] },
     contexts: { categories: ['flow'], elements: [] },
@@ -1007,7 +818,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'select',
-    description: 'Control for selecting among options',
     categories: ['flow', 'phrasing', 'interactive', 'palpable'],
     formCategories: [
       'listed',
@@ -1021,48 +831,27 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
       categories: ['script-supporting'],
       elements: ['option', 'optgroup', 'hr', 'noscript', 'div'],
       conditionalElements: ['button'],
-      note: 'When the select is a drop-down box, a single button may appear first',
     },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 'selectedcontent',
-    description: 'Mirror of the selected option content inside a select',
     categories: [],
     conditionalCategories: ['phrasing'],
-    conditionalNote:
-      'Only as a descendant of a button element that is a child of a select element',
-    contentModel: {
-      kind: 'none',
-      categories: [],
-      elements: [],
-      note: 'Nothing; the browser mirrors the selected option content into it',
-    },
-    contexts: {
-      categories: [],
-      elements: [],
-      conditionalElements: ['button'],
-      note: 'Inside a button element that is the first child of a select element',
-    },
+    contentModel: { kind: 'none', categories: [], elements: [] },
+    contexts: { categories: [], elements: [], conditionalElements: ['button'] },
     void: false,
   },
   {
     tag: 'slot',
-    description: 'Placeholder for shadow DOM content',
     categories: ['flow', 'phrasing'],
-    contentModel: {
-      kind: 'transparent',
-      categories: [],
-      elements: [],
-      note: "Follows the parent's content model. May hold fallback content",
-    },
+    contentModel: { kind: 'transparent', categories: [], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 'small',
-    description: 'Side comment such as a disclaimer or fine print',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -1070,7 +859,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'source',
-    description: 'Media source candidate for picture, video, or audio',
     categories: [],
     contentModel: { kind: 'empty', categories: [], elements: [] },
     contexts: { categories: [], elements: ['picture', 'video', 'audio'] },
@@ -1078,7 +866,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'span',
-    description: 'Generic inline container with no inherent meaning',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -1086,7 +873,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'strong',
-    description: 'Strong importance or urgency',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -1094,14 +880,8 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'style',
-    description: 'Embedded CSS style information',
     categories: ['metadata'],
-    contentModel: {
-      kind: 'text',
-      categories: [],
-      elements: [],
-      note: 'Style information such as CSS',
-    },
+    contentModel: { kind: 'text', categories: [], elements: [] },
     contexts: {
       categories: [],
       elements: ['head'],
@@ -1111,7 +891,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'sub',
-    description: 'Subscript',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -1119,7 +898,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'summary',
-    description: 'Summary or caption for a details disclosure',
     categories: [],
     contentModel: {
       kind: 'elements',
@@ -1131,7 +909,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'sup',
-    description: 'Superscript',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -1139,34 +916,25 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'svg',
-    description: 'Embedded SVG vector graphics',
     categories: ['flow', 'phrasing', 'embedded', 'palpable'],
-    contentModel: {
-      kind: 'foreign',
-      categories: [],
-      elements: [],
-      note: 'SVG foreign content',
-    },
+    contentModel: { kind: 'foreign', categories: [], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 'table',
-    description: 'Tabular data',
     categories: ['flow', 'palpable'],
     contentModel: {
       kind: 'elements',
       categories: ['script-supporting'],
       elements: ['caption', 'colgroup', 'thead', 'tbody', 'tfoot'],
       conditionalElements: ['tr'],
-      note: 'Direct tr children only if the table has no tbody children',
     },
     contexts: { categories: ['flow'], elements: [] },
     void: false,
   },
   {
     tag: 'tbody',
-    description: 'Group of table body rows',
     categories: [],
     contentModel: {
       kind: 'elements',
@@ -1178,7 +946,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'td',
-    description: 'Table data cell',
     categories: [],
     contentModel: { kind: 'elements', categories: ['flow'], elements: [] },
     contexts: { categories: [], elements: ['tr'] },
@@ -1186,14 +953,8 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'template',
-    description: 'Template for client-side content cloning',
     categories: ['metadata', 'flow', 'phrasing', 'script-supporting'],
-    contentModel: {
-      kind: 'none',
-      categories: [],
-      elements: [],
-      note: 'Content model is Nothing; its markup is stored in the content DocumentFragment',
-    },
+    contentModel: { kind: 'none', categories: [], elements: [] },
     contexts: {
       categories: ['metadata', 'phrasing', 'script-supporting'],
       elements: [],
@@ -1203,7 +964,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'textarea',
-    description: 'Multiline plain-text form control',
     categories: ['flow', 'phrasing', 'interactive', 'palpable'],
     formCategories: [
       'listed',
@@ -1218,7 +978,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'tfoot',
-    description: 'Group of table footer rows',
     categories: [],
     contentModel: {
       kind: 'elements',
@@ -1230,7 +989,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'th',
-    description: 'Table header cell',
     categories: [],
     contentModel: {
       kind: 'elements',
@@ -1238,14 +996,12 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
       elements: [],
       excludedCategories: ['heading', 'sectioning'],
       excludedElements: ['header', 'footer'],
-      note: 'Flow content with no heading, sectioning, header, or footer descendants',
     },
     contexts: { categories: [], elements: ['tr'] },
     void: false,
   },
   {
     tag: 'thead',
-    description: 'Group of table header rows',
     categories: [],
     contentModel: {
       kind: 'elements',
@@ -1257,7 +1013,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'time',
-    description: 'Machine-readable date, time, or duration',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -1265,7 +1020,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'title',
-    description: 'Document title (metadata)',
     categories: ['metadata'],
     contentModel: { kind: 'text', categories: [], elements: [] },
     contexts: { categories: [], elements: ['head'] },
@@ -1273,25 +1027,21 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'tr',
-    description: 'Table row of cells (th / td)',
     categories: [],
     contentModel: {
       kind: 'elements',
       categories: ['script-supporting'],
       elements: ['td', 'th', 'script', 'template'],
-      note: 'Cells (td / th) and script-supporting elements',
     },
     contexts: {
       categories: [],
       elements: ['thead', 'tbody', 'tfoot'],
       conditionalElements: ['table'],
-      note: 'Directly inside table only if the table has no tbody children, after any caption, colgroup, and thead elements',
     },
     void: false,
   },
   {
     tag: 'track',
-    description: 'Timed text track (captions, subtitles) for media elements',
     categories: [],
     contentModel: { kind: 'empty', categories: [], elements: [] },
     contexts: { categories: [], elements: ['audio', 'video'] },
@@ -1299,7 +1049,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'u',
-    description: 'Text with a non-textual annotation (unarticulated)',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -1307,7 +1056,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'ul',
-    description: 'Unordered list',
     categories: ['flow'],
     conditionalCategories: ['palpable'],
     contentModel: {
@@ -1320,7 +1068,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'var',
-    description: 'Variable in a mathematical expression or program',
     categories: ['flow', 'phrasing', 'palpable'],
     contentModel: { kind: 'elements', categories: ['phrasing'], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -1328,7 +1075,6 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   },
   {
     tag: 'video',
-    description: 'Embedded video',
     categories: ['flow', 'phrasing', 'embedded', 'palpable'],
     conditionalCategories: ['interactive'],
     contentModel: {
@@ -1337,14 +1083,12 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
       elements: ['track'],
       conditionalElements: ['source'],
       excludedElements: ['audio', 'video'],
-      note: "Follows the parent's content model. Source elements only when there is no src attribute; track elements either way; no media element descendants",
     },
     contexts: { categories: ['phrasing'], elements: [] },
     void: false,
   },
   {
     tag: 'wbr',
-    description: 'Line-break opportunity',
     categories: ['flow', 'phrasing'],
     contentModel: { kind: 'empty', categories: [], elements: [] },
     contexts: { categories: ['phrasing'], elements: [] },
@@ -1356,3 +1100,35 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
 export const HTML_ELEMENT_TAGS: readonly string[] = HTML_ELEMENTS.map(
   (element) => element.tag,
 );
+
+// Merge display strings into structure-only element data. Works with any
+// per-tag record of the ElementDescription shape, so localized strings can
+// be applied the same way as the bundled English ones (./descriptions).
+// Elements whose tag is missing from the record are returned unchanged.
+export const applyElementDescriptions = (
+  elements: readonly HtmlElementInfo[],
+  descriptions: Readonly<Record<string, ElementDescription>>,
+): HtmlElementInfo[] =>
+  elements.map((element) => {
+    const entry = descriptions[element.tag];
+    if (entry === undefined) {
+      return element;
+    }
+    // Attach optional fields conditionally to stay compatible with
+    // exactOptionalPropertyTypes.
+    return {
+      ...element,
+      description: entry.description,
+      ...(entry.conditionalNote === undefined
+        ? {}
+        : { conditionalNote: entry.conditionalNote }),
+      contentModel:
+        entry.contentModelNote === undefined
+          ? element.contentModel
+          : { ...element.contentModel, note: entry.contentModelNote },
+      contexts:
+        entry.contextsNote === undefined
+          ? element.contexts
+          : { ...element.contexts, note: entry.contextsNote },
+    };
+  });

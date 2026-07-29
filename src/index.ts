@@ -1,9 +1,4 @@
-export {
-  CONTENT_CATEGORY_LABEL,
-  CONTENT_CATEGORY_METAS,
-  FORM_CATEGORY_LABEL,
-  type CategoryMeta,
-} from './categories';
+export { CONTENT_CATEGORY_LABEL, FORM_CATEGORY_LABEL } from './categories';
 export {
   canContain,
   canSelfNest,
@@ -16,12 +11,17 @@ export {
   type RelatedElement,
   type Relation,
 } from './content-model';
-export { HTML_ELEMENTS, HTML_ELEMENT_TAGS } from './elements';
+export {
+  HTML_ELEMENTS,
+  HTML_ELEMENT_TAGS,
+  applyElementDescriptions,
+} from './elements';
 export type {
   ContentCategory,
   ContentModel,
   ContentModelKind,
   ElementContexts,
+  ElementDescription,
   FormCategory,
   HtmlElementInfo,
 } from './types';

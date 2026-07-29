@@ -1,5 +1,5 @@
 import {
-  CONTENT_CATEGORY_METAS,
+  CONTENT_CATEGORY_LABEL,
   HTML_ELEMENTS,
   HTML_ELEMENT_TAGS,
   canContain,
@@ -14,9 +14,7 @@ import {
 } from '../src/index.ts';
 
 const TAG_SET = new Set(HTML_ELEMENT_TAGS);
-const CATEGORY_SET = new Set<string>(
-  CONTENT_CATEGORY_METAS.map((meta) => meta.key),
-);
+const CATEGORY_SET = new Set<string>(Object.keys(CONTENT_CATEGORY_LABEL));
 
 // Keep element lookup out of the test bodies so they stay branch-free.
 const el = (tag: string): HtmlElementInfo => {
