@@ -1,0 +1,55 @@
+{
+  "name": "@k8o/html-nest",
+  "version": "0.0.0",
+  "description": "HTML content-model engine and oxlint plugin for validating parent-child nesting",
+  "keywords": [],
+  "homepage": "https://github.com/k35o/html-nest#readme",
+  "bugs": "https://github.com/k35o/html-nest/issues",
+  "license": "MIT",
+  "author": "k8o (https://github.com/k35o)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/k35o/html-nest.git"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "vp pack",
+    "test": "vp test",
+    "lint": "vp lint",
+    "fmt": "vp fmt",
+    "check": "vp check",
+    "check:write": "vp check --fix",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm build"
+  },
+  "devDependencies": {
+    "@k8o/oxc-config": "0.1.3",
+    "@types/node": "26.1.1",
+    "typescript": "6.0.3",
+    "vite-plus": "0.2.4"
+  },
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "packageManager": "pnpm@11.15.1"
+}
