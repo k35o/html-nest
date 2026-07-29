@@ -1,6 +1,6 @@
 {
   "name": "@k8o/html-nest",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "HTML content-model engine and oxlint plugin for validating parent-child nesting",
   "keywords": [
     "content-model",
