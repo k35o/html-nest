@@ -6,3 +6,7 @@
   dir: ""
   intents:
     - readme-badge-and-versions
+"@k8o/html-nest@0.2.0":
+  dir: ""
+  intents:
+    - split-display-strings
