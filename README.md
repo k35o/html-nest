@@ -1,5 +1,7 @@
 # @k8o/html-nest
 
+[![npm version](https://img.shields.io/npm/v/%40k8o%2Fhtml-nest)](https://www.npmjs.com/package/@k8o/html-nest)
+
 An HTML content-model engine with an [oxlint](https://oxc.rs/docs/guide/usage/linter) plugin on top: structured WHATWG HTML Living Standard data about which elements may nest inside which, and a JSX lint rule that enforces it.
 
 - **Engine** (`@k8o/html-nest`): per-element content categories, content models, and placement contexts straight from the spec's elements index, with query functions (`canContain`, `getParents`, `getChildren`, ...). Covers modern additions such as the customizable `<select>`.
@@ -42,7 +44,7 @@ The rule:
 - resolves the effective parent through fragments and simple expressions — `<p>{cond && <div />}</p>` is reported — but never through function boundaries such as render props
 - accepts nesting the spec allows only conditionally (its asterisked cases, e.g. transparent elements like `<a>`), because the condition depends on attributes and context the rule cannot see
 
-> `jsPlugins` requires oxlint's JS plugin support (oxlint >= 1.x with `jsPlugins`, still alpha upstream).
+> `jsPlugins` requires oxlint's JS plugin support, which is still alpha upstream. The rule is verified against oxlint 1.74–1.76.
 
 ## Use the engine directly
 
