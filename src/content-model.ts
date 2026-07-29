@@ -82,6 +82,22 @@ export const canContain = (
         reason: parent.contentModel.note ?? GENERIC_REASON,
       };
     }
+    // Conditional acceptance still applies to non-element content models:
+    // e.g. option is text-only normally but accepts option-inner content in
+    // customizable select elements.
+    if (
+      (model.conditionalElements ?? []).includes(child.tag) ||
+      intersects(model.conditionalCategories ?? [], [
+        ...child.categories,
+        ...(child.conditionalCategories ?? []),
+      ])
+    ) {
+      return {
+        allowed: true,
+        conditional: true,
+        reason: model.note ?? GENERIC_REASON,
+      };
+    }
     return NOT_ALLOWED;
   }
 

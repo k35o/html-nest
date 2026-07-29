@@ -47,7 +47,9 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
   {
     tag: 'area',
     description: 'Region on an image map',
-    categories: ['flow', 'phrasing'],
+    categories: [],
+    conditionalCategories: ['flow', 'phrasing'],
+    conditionalNote: 'Only if there is a map element ancestor',
     contentModel: { kind: 'empty', categories: [], elements: [] },
     contexts: {
       categories: [],
@@ -572,9 +574,14 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
     tag: 'iframe',
     description: 'Nested browsing context (inline frame)',
     categories: ['flow', 'phrasing', 'embedded', 'interactive', 'palpable'],
-    contentModel: { kind: 'empty', categories: [], elements: [] },
+    contentModel: {
+      kind: 'none',
+      categories: [],
+      elements: [],
+      note: 'Nothing; iframe is not a void element and requires an end tag',
+    },
     contexts: { categories: ['phrasing'], elements: [] },
-    void: true,
+    void: false,
   },
   {
     tag: 'img',
@@ -827,7 +834,7 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
     categories: ['select-inner'],
     contentModel: {
       kind: 'elements',
-      categories: ['optgroup-inner'],
+      categories: ['optgroup-inner', 'script-supporting'],
       elements: ['legend'],
     },
     contexts: {
@@ -845,7 +852,8 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
       kind: 'text',
       categories: [],
       elements: [],
-      note: 'Text, or option element inner content',
+      conditionalCategories: ['option-inner'],
+      note: 'Text, or option element inner content in customizable select elements',
     },
     contexts: {
       categories: [],
@@ -1003,7 +1011,7 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
     ],
     contentModel: {
       kind: 'elements',
-      categories: ['select-inner'],
+      categories: ['select-inner', 'script-supporting'],
       elements: [],
       conditionalElements: ['button'],
       note: 'In a customizable select, a single button may appear first',
@@ -1015,9 +1023,14 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
     tag: 'selectedcontent',
     description: 'Mirror of the selected option content inside a select',
     categories: [],
-    contentModel: { kind: 'empty', categories: [], elements: [] },
+    contentModel: {
+      kind: 'none',
+      categories: [],
+      elements: [],
+      note: 'Nothing; the browser mirrors the selected option content into it',
+    },
     contexts: { categories: [], elements: ['button'] },
-    void: true,
+    void: false,
   },
   {
     tag: 'slot',
@@ -1205,9 +1218,8 @@ export const HTML_ELEMENTS: readonly HtmlElementInfo[] = [
     categories: [],
     contentModel: {
       kind: 'elements',
-      categories: [],
+      categories: ['flow'],
       elements: [],
-      conditionalCategories: ['flow'],
       excludedCategories: ['heading', 'sectioning'],
       excludedElements: ['header', 'footer'],
       note: 'Flow content with no heading, sectioning, header, or footer descendants',

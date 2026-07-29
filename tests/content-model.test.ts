@@ -129,6 +129,29 @@ describe('HTML element dataset integrity', () => {
     it('gives the root element html no parent', () => {
       expect(parentTagsOf('html')).toStrictEqual([]);
     });
+
+    it('marks exactly the spec-defined void elements as void', () => {
+      const voidTags = HTML_ELEMENTS.filter((element) => element.void)
+        .map((element) => element.tag)
+        .toSorted();
+      // The spec's closed list; notably iframe and selectedcontent are NOT
+      // void (both require an end tag)
+      expect(voidTags).toStrictEqual([
+        'area',
+        'base',
+        'br',
+        'col',
+        'embed',
+        'hr',
+        'img',
+        'input',
+        'link',
+        'meta',
+        'source',
+        'track',
+        'wbr',
+      ]);
+    });
   });
 });
 
@@ -209,6 +232,28 @@ describe('canContain / nesting resolution', () => {
     });
   });
 
+  describe('valid cases (customizable select)', () => {
+    it('lets select contain script-supporting elements besides its inner content', () => {
+      expect(canContain(el('select'), el('script')).allowed).toBe(true);
+      expect(canContain(el('select'), el('template')).allowed).toBe(true);
+      expect(canContain(el('select'), el('hr')).allowed).toBe(true);
+      expect(canContain(el('select'), el('noscript')).allowed).toBe(true);
+    });
+
+    it('lets optgroup contain script-supporting elements besides options', () => {
+      expect(canContain(el('optgroup'), el('script')).allowed).toBe(true);
+      expect(canContain(el('optgroup'), el('option')).allowed).toBe(true);
+    });
+
+    it('lets option conditionally contain option-inner content such as div', () => {
+      const check = canContain(el('option'), el('div'));
+      expect(check.allowed).toBe(true);
+      expect(check.conditional).toBe(true);
+      expect(canContain(el('option'), el('span')).allowed).toBe(true);
+      expect(canContain(el('option'), el('p')).allowed).toBe(false);
+    });
+  });
+
   describe('edge cases (special content models)', () => {
     it('gives the void element img no children', () => {
       expect(childTagsOf('img')).toStrictEqual([]);
@@ -227,6 +272,25 @@ describe('canContain / nesting resolution', () => {
 
     it('allows div to nest inside itself', () => {
       expect(canSelfNest(el('div')).allowed).toBe(true);
+    });
+
+    it('allows area in phrasing contexts only conditionally (map ancestor)', () => {
+      const inParagraph = canContain(el('p'), el('area'));
+      expect(inParagraph.allowed).toBe(true);
+      expect(inParagraph.conditional).toBe(true);
+      expect(canContain(el('map'), el('area')).conditional).toBe(false);
+    });
+
+    it('gives iframe and selectedcontent no children despite not being void', () => {
+      expect(childTagsOf('iframe')).toStrictEqual([]);
+      expect(childTagsOf('selectedcontent')).toStrictEqual([]);
+    });
+
+    it('lets th contain flow content unconditionally, minus its exclusions', () => {
+      const check = canContain(el('th'), el('div'));
+      expect(check.allowed).toBe(true);
+      expect(check.conditional).toBe(false);
+      expect(canContain(el('th'), el('h1')).allowed).toBe(false);
     });
   });
 
