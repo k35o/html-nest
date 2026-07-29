@@ -9,6 +9,11 @@ type Ancestor = {
   type: string;
   openingElement?: { name: NameNode };
   parent?: Ancestor | null;
+  operator?: string;
+  test?: unknown;
+  right?: unknown;
+  body?: unknown;
+  callee?: { type: string; property?: { type: string; name?: string } };
 };
 
 const rule = plugin.rules['valid-html-nesting'];
@@ -79,6 +84,28 @@ describe('html-nest/valid-html-nesting', () => {
       );
       expect(lint(jsx('div', fn))).toStrictEqual([]);
     });
+
+    it('does not report JSX in positions that never render', () => {
+      // <p>{<div /> ? a : b}</p>: the test operand is only coerced to a boolean
+      const ternary = wrapper(
+        'ConditionalExpression',
+        wrapper('JSXExpressionContainer', jsx('p')),
+      );
+      const testDiv = jsx('div', ternary);
+      ternary.test = testDiv;
+      expect(lint(testDiv)).toStrictEqual([]);
+
+      // <p>{<div /> && x}</p>: a JSX object is always truthy, so the left
+      // operand of && never renders
+      const logical = wrapper(
+        'LogicalExpression',
+        wrapper('JSXExpressionContainer', jsx('p')),
+      );
+      logical.operator = '&&';
+      const leftDiv = jsx('div', logical);
+      logical.right = wrapper('Identifier');
+      expect(lint(leftDiv)).toStrictEqual([]);
+    });
   });
 
   describe('invalid cases', () => {
@@ -114,7 +141,48 @@ describe('html-nest/valid-html-nesting', () => {
         'LogicalExpression',
         wrapper('JSXExpressionContainer', jsx('p')),
       );
-      expect(lint(jsx('div', logical))).toHaveLength(1);
+      logical.operator = '&&';
+      const div = jsx('div', logical);
+      logical.right = div;
+      expect(lint(div)).toHaveLength(1);
+    });
+
+    it('looks through array literals rendered as children', () => {
+      // <p>{[<div />, <div />]}</p>
+      const array = wrapper(
+        'ArrayExpression',
+        wrapper('JSXExpressionContainer', jsx('p')),
+      );
+      expect(lint(jsx('div', array))).toHaveLength(1);
+    });
+
+    it('looks through expression-bodied map callbacks', () => {
+      // <p>{items.map((item) => <div />)}</p>
+      const call = wrapper(
+        'CallExpression',
+        wrapper('JSXExpressionContainer', jsx('p')),
+      );
+      call.callee = {
+        type: 'MemberExpression',
+        property: { type: 'Identifier', name: 'map' },
+      };
+      const fn = wrapper('ArrowFunctionExpression', call);
+      const div = jsx('div', fn);
+      fn.body = div;
+      expect(lint(div)).toHaveLength(1);
+    });
+
+    it('does not look through callbacks of non-iteration calls', () => {
+      // <p>{createPortal(<div />)}</p>-like shapes stay unreported
+      const call = wrapper(
+        'CallExpression',
+        wrapper('JSXExpressionContainer', jsx('p')),
+      );
+      call.callee = { type: 'Identifier' };
+      const fn = wrapper('ArrowFunctionExpression', call);
+      const div = jsx('div', fn);
+      fn.body = div;
+      expect(lint(div)).toStrictEqual([]);
     });
 
     it('reports nothing for a top-level element with no parent', () => {

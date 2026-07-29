@@ -50,6 +50,13 @@ export const canContain = (
     if (model.elements.includes(child.tag)) {
       return { allowed: true, conditional: false };
     }
+    if ((model.conditionalElements ?? []).includes(child.tag)) {
+      return {
+        allowed: true,
+        conditional: true,
+        reason: model.note ?? GENERIC_REASON,
+      };
+    }
     const childCategories = new Set([
       ...child.categories,
       ...(child.conditionalCategories ?? []),
@@ -226,6 +233,18 @@ export const canSelfNest = (selected: HtmlElementInfo): ContainCheck =>
 // a nesting is rejected.
 export const describeAllowedContent = (element: HtmlElementInfo): string => {
   const cm = element.contentModel;
+  // Conditionally accepted content is marked with the spec's asterisk so
+  // messages like colgroup's do not degrade to an empty list.
+  const conditionalParts = [
+    ...(cm.conditionalElements ?? []).map((tag) => `<${tag}>*`),
+    ...(cm.conditionalCategories ?? []).map(
+      (category) => `${CONTENT_CATEGORY_LABEL[category]}*`,
+    ),
+  ];
+  const withConditionals = (base: string): string =>
+    conditionalParts.length > 0
+      ? `${base}; conditionally: ${conditionalParts.join(' / ')}`
+      : base;
   if (cm.kind === 'empty') {
     return 'Void element; it cannot have children';
   }
@@ -233,16 +252,16 @@ export const describeAllowedContent = (element: HtmlElementInfo): string => {
     return 'No content allowed (Nothing)';
   }
   if (cm.kind === 'text') {
-    return 'Text only';
+    return withConditionals('Text only');
   }
   if (cm.kind === 'foreign') {
     return 'SVG / MathML foreign content';
   }
   if (cm.kind === 'varies') {
-    return 'Varies by context';
+    return withConditionals('Varies by context');
   }
   if (cm.kind === 'transparent') {
-    return "Follows the parent's content model (transparent)";
+    return withConditionals("Follows the parent's content model (transparent)");
   }
   // Elements accepting both specific elements and categories (details /
   // fieldset / figure, ...) need both listed; either alone would drop e.g.
@@ -250,6 +269,7 @@ export const describeAllowedContent = (element: HtmlElementInfo): string => {
   const parts = [
     ...cm.elements.map((tag) => `<${tag}>`),
     ...cm.categories.map((category) => CONTENT_CATEGORY_LABEL[category]),
+    ...conditionalParts,
   ];
   return parts.length > 0 ? parts.join(' / ') : '—';
 };

@@ -61,21 +61,6 @@ export const CONTENT_CATEGORY_METAS: readonly CategoryMeta[] = [
     label: 'Script-supporting elements',
     description: 'Not rendered; supports processing: script and template.',
   },
-  {
-    key: 'select-inner',
-    label: 'select element inner content',
-    description: 'Elements allowed inside a customizable select.',
-  },
-  {
-    key: 'optgroup-inner',
-    label: 'optgroup element inner content',
-    description: 'Elements allowed inside an optgroup.',
-  },
-  {
-    key: 'option-inner',
-    label: 'option element inner content',
-    description: 'Elements allowed inside an option.',
-  },
 ];
 
 export const CONTENT_CATEGORY_LABEL: Record<ContentCategory, string> =

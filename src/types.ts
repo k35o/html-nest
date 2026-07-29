@@ -14,11 +14,7 @@ export type ContentCategory =
   | 'embedded'
   | 'interactive'
   | 'palpable'
-  | 'script-supporting'
-  // Internal content categories for the customizable select element
-  | 'select-inner'
-  | 'optgroup-inner'
-  | 'option-inner';
+  | 'script-supporting';
 
 // Form-related side categories. Not used for nesting resolution.
 export type FormCategory =

@@ -21,6 +21,12 @@ type AncestorNode = {
   type: string;
   openingElement?: { name: JsxElementName };
   parent?: AncestorNode | null;
+  // Operand/callee fields consulted while resolving the effective parent
+  operator?: string;
+  test?: unknown;
+  right?: unknown;
+  body?: unknown;
+  callee?: { type: string; property?: { type: string; name?: string } };
 };
 
 type JsxElementNode = AncestorNode & {
@@ -50,18 +56,25 @@ type Plugin = {
 const isComponentName = (name: string): boolean => /^[A-Z]/u.test(name);
 
 // Nodes the rule looks through when resolving the effective parent element:
-// fragments and simple conditional expressions do not introduce a DOM node,
-// so `<p>{cond && <div/>}</p>` still renders the div inside the p. Function
+// fragments, expression containers, array literals, and the rendering
+// positions of conditional expressions do not introduce a DOM node, so
+// `<p>{cond && <div/>}</p>` still renders the div inside the p. Function
 // boundaries (render props etc.) are not followed because where they render
-// is unknowable statically.
+// is unknowable statically — except expression-bodied `.map`/`.flatMap`
+// callbacks, whose returned JSX becomes the caller's children in place.
 const TRANSPARENT_NODE_TYPES: ReadonlySet<string> = new Set([
   'JSXFragment',
   'JSXExpressionContainer',
-  'LogicalExpression',
-  'ConditionalExpression',
+  'ArrayExpression',
 ]);
 
+const isIterationCallee = (callee: AncestorNode['callee']): boolean =>
+  callee?.type === 'MemberExpression' &&
+  callee.property?.type === 'Identifier' &&
+  (callee.property.name === 'map' || callee.property.name === 'flatMap');
+
 const findParentElementName = (node: JsxElementNode): string | null => {
+  let previous: AncestorNode = node;
   let current = node.parent;
   while (current !== null && current !== undefined) {
     if (current.type === 'JSXElement') {
@@ -70,9 +83,40 @@ const findParentElementName = (node: JsxElementNode): string | null => {
         ? name.name
         : null;
     }
-    if (!TRANSPARENT_NODE_TYPES.has(current.type)) {
+    if (current.type === 'ConditionalExpression') {
+      // The test position never renders as a child (a JSX object is coerced
+      // to a boolean there); consequent/alternate render in place
+      if (current.test === previous) {
+        return null;
+      }
+    } else if (current.type === 'LogicalExpression') {
+      // In `a && b` the left operand's JSX never renders (it is always
+      // truthy, so the expression yields the right side); with || and ??
+      // either operand can end up rendered in place
+      if (current.operator === '&&' && current.right !== previous) {
+        return null;
+      }
+    } else if (
+      current.type === 'ArrowFunctionExpression' ||
+      current.type === 'FunctionExpression'
+    ) {
+      // Look through expression-bodied `.map`/`.flatMap` callbacks only:
+      // their return value becomes the surrounding element's children
+      const call = current.parent;
+      const isInlineIterationCallback =
+        current.body === previous &&
+        call?.type === 'CallExpression' &&
+        isIterationCallee(call.callee);
+      if (!isInlineIterationCallback) {
+        return null;
+      }
+      previous = call;
+      current = call.parent;
+      continue;
+    } else if (!TRANSPARENT_NODE_TYPES.has(current.type)) {
       return null;
     }
+    previous = current;
     current = current.parent;
   }
   return null;

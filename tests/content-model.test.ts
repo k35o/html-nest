@@ -233,11 +233,12 @@ describe('canContain / nesting resolution', () => {
   });
 
   describe('valid cases (customizable select)', () => {
-    it('lets select contain script-supporting elements besides its inner content', () => {
+    it('lets select contain its listed children and script-supporting elements', () => {
       expect(canContain(el('select'), el('script')).allowed).toBe(true);
       expect(canContain(el('select'), el('template')).allowed).toBe(true);
       expect(canContain(el('select'), el('hr')).allowed).toBe(true);
       expect(canContain(el('select'), el('noscript')).allowed).toBe(true);
+      expect(canContain(el('select'), el('div')).allowed).toBe(true);
     });
 
     it('lets optgroup contain script-supporting elements besides options', () => {
@@ -245,12 +246,25 @@ describe('canContain / nesting resolution', () => {
       expect(canContain(el('optgroup'), el('option')).allowed).toBe(true);
     });
 
-    it('lets option conditionally contain option-inner content such as div', () => {
-      const check = canContain(el('option'), el('div'));
+    it('lets option conditionally contain div and phrasing content', () => {
+      const div = canContain(el('option'), el('div'));
+      expect(div.allowed).toBe(true);
+      expect(div.conditional).toBe(true);
+      expect(canContain(el('option'), el('span')).allowed).toBe(true);
+      expect(canContain(el('option'), el('em')).allowed).toBe(true);
+      expect(canContain(el('option'), el('p')).allowed).toBe(false);
+    });
+
+    it('rejects interactive, datalist, and object content inside option', () => {
+      expect(canContain(el('option'), el('button')).allowed).toBe(false);
+      expect(canContain(el('option'), el('datalist')).allowed).toBe(false);
+      expect(canContain(el('option'), el('object')).allowed).toBe(false);
+    });
+
+    it('allows selectedcontent only conditionally inside a button', () => {
+      const check = canContain(el('button'), el('selectedcontent'));
       expect(check.allowed).toBe(true);
       expect(check.conditional).toBe(true);
-      expect(canContain(el('option'), el('span')).allowed).toBe(true);
-      expect(canContain(el('option'), el('p')).allowed).toBe(false);
     });
   });
 
@@ -291,6 +305,52 @@ describe('canContain / nesting resolution', () => {
       expect(check.allowed).toBe(true);
       expect(check.conditional).toBe(false);
       expect(canContain(el('th'), el('h1')).allowed).toBe(false);
+    });
+
+    it('rejects non-whitelisted interactive content inside canvas fallback', () => {
+      expect(canContain(el('canvas'), el('iframe')).allowed).toBe(false);
+      expect(canContain(el('canvas'), el('textarea')).allowed).toBe(false);
+      // Whitelisted interactive fallback stays allowed
+      expect(canContain(el('canvas'), el('button')).allowed).toBe(true);
+      expect(canContain(el('canvas'), el('a')).allowed).toBe(true);
+    });
+
+    it('allows tr directly inside table only conditionally (no tbody children)', () => {
+      const inTable = canContain(el('table'), el('tr'));
+      expect(inTable.allowed).toBe(true);
+      expect(inTable.conditional).toBe(true);
+      expect(canContain(el('tbody'), el('tr')).conditional).toBe(false);
+    });
+
+    it('allows main placement only conditionally (hierarchically correct)', () => {
+      const inDiv = canContain(el('div'), el('main'));
+      expect(inDiv.allowed).toBe(true);
+      expect(inDiv.conditional).toBe(true);
+      const inArticle = canContain(el('article'), el('main'));
+      expect(inArticle.conditional).toBe(true);
+    });
+
+    it('allows dt and dd inside a div only conditionally (div child of dl)', () => {
+      const check = canContain(el('div'), el('dt'));
+      expect(check.allowed).toBe(true);
+      expect(check.conditional).toBe(true);
+      expect(canContain(el('dl'), el('dd')).conditional).toBe(false);
+    });
+
+    it('allows source in media elements only conditionally (no src attribute)', () => {
+      const check = canContain(el('video'), el('source'));
+      expect(check.allowed).toBe(true);
+      expect(check.conditional).toBe(true);
+      expect(canContain(el('audio'), el('track')).conditional).toBe(false);
+    });
+
+    it('lets noscript hold flow content conditionally (transparent outside head)', () => {
+      // The classic <noscript><iframe/></noscript> tracking snippet
+      expect(canContain(el('noscript'), el('iframe')).allowed).toBe(true);
+      expect(canContain(el('noscript'), el('img')).allowed).toBe(true);
+      expect(canContain(el('noscript'), el('p')).allowed).toBe(true);
+      expect(canContain(el('noscript'), el('link')).allowed).toBe(true);
+      expect(canContain(el('noscript'), el('noscript')).allowed).toBe(false);
     });
   });
 
@@ -338,5 +398,13 @@ describe('describeAllowedContent / allowed content summary', () => {
 
   it('reports text-only elements as text only', () => {
     expect(describeAllowedContent(el('title'))).toBe('Text only');
+  });
+
+  it('lists conditionally accepted content instead of an empty list', () => {
+    // colgroup accepts col/template only without a span attribute
+    const result = describeAllowedContent(el('colgroup'));
+    expect(result).toContain('<col>*');
+    expect(result).toContain('<template>*');
+    expect(result).not.toBe('—');
   });
 });
