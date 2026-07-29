@@ -8,6 +8,7 @@ export {
   getParents,
   relationOf,
   type ContainCheck,
+  type ContainReasonKind,
   type RelatedElement,
   type Relation,
 } from './content-model';

@@ -1,7 +1,9 @@
+import { HTML_ELEMENT_DESCRIPTIONS } from '../src/descriptions.ts';
 import {
   CONTENT_CATEGORY_LABEL,
   HTML_ELEMENTS,
   HTML_ELEMENT_TAGS,
+  applyElementDescriptions,
   canContain,
   canSelfNest,
   describeAllowedContent,
@@ -89,9 +91,47 @@ const collectSymmetryMismatches = (): string[] => {
   return mismatches;
 };
 
+// The structure-only dataset carries no notes, so reasons on it can only be
+// the built-in fallbacks; note-based reasons need merged descriptions.
+const DOCUMENTED = applyElementDescriptions(
+  HTML_ELEMENTS,
+  HTML_ELEMENT_DESCRIPTIONS,
+);
+
+const documented = (tag: string): HtmlElementInfo => {
+  const found = DOCUMENTED.find((element) => element.tag === tag);
+  if (found === undefined) {
+    throw new Error(`Unknown element: ${tag}`);
+  }
+  return found;
+};
+
+// Precompute pairs violating "conditional ⟺ reason and reasonKind present",
+// on both the structure-only and the description-merged data.
+const collectReasonPairingMismatches = (): string[] => {
+  const mismatches: string[] = [];
+  for (const elements of [HTML_ELEMENTS, DOCUMENTED]) {
+    for (const parent of elements) {
+      for (const child of elements) {
+        const check = canContain(parent, child);
+        const hasBoth =
+          check.reason !== undefined && check.reasonKind !== undefined;
+        const hasNeither =
+          check.reason === undefined && check.reasonKind === undefined;
+        const consistent = check.conditional ? hasBoth : hasNeither;
+        if (!consistent) {
+          mismatches.push(`${parent.tag} ∋ ${child.tag}`);
+        }
+      }
+    }
+  }
+  return mismatches;
+};
+
 const DANGLING_REFS = collectDanglingRefs();
 const UNKNOWN_CATEGORIES = collectUnknownCategories();
 const SYMMETRY_MISMATCHES = collectSymmetryMismatches();
+const REASON_PAIRING_MISMATCHES = collectReasonPairingMismatches();
 const VOID_NON_EMPTY = HTML_ELEMENTS.filter(
   (element) => element.void && element.contentModel.kind !== 'empty',
 ).map((element) => element.tag);
@@ -349,6 +389,92 @@ describe('canContain / nesting resolution', () => {
       expect(canContain(el('noscript'), el('p')).allowed).toBe(true);
       expect(canContain(el('noscript'), el('link')).allowed).toBe(true);
       expect(canContain(el('noscript'), el('noscript')).allowed).toBe(false);
+    });
+  });
+
+  describe('reason provenance (reasonKind)', () => {
+    it('pairs reason and reasonKind exactly with conditional across all pairs', () => {
+      expect(REASON_PAIRING_MISMATCHES).toStrictEqual([]);
+    });
+
+    it('marks the generic fallback on structure-only data', () => {
+      expect(canContain(el('table'), el('tr'))).toStrictEqual({
+        allowed: true,
+        conditional: true,
+        reason: 'Depends on context or attributes (see the spec)',
+        reasonKind: 'generic',
+      });
+    });
+
+    it('marks the transparent fallback on structure-only data', () => {
+      expect(canContain(el('a'), el('div'))).toStrictEqual({
+        allowed: true,
+        conditional: true,
+        reason: "a is transparent; it follows its parent's content model",
+        reasonKind: 'transparent',
+      });
+    });
+
+    it('surfaces a parent-side note once descriptions are merged', () => {
+      expect(
+        canContain(documented('video'), documented('source')),
+      ).toStrictEqual({
+        allowed: true,
+        conditional: true,
+        reason:
+          "Follows the parent's content model. Source elements only when there is no src attribute; track elements either way; no media element descendants",
+        reasonKind: 'note',
+      });
+    });
+
+    it('surfaces the child-side contexts note once descriptions are merged', () => {
+      // tr names table among its conditional parents, so the explanation
+      // comes from tr's contexts, not from table's content model
+      expect(canContain(documented('table'), documented('tr'))).toStrictEqual({
+        allowed: true,
+        conditional: true,
+        reason:
+          'Directly inside table only if the table has no tbody children, after any caption, colgroup, and thead elements',
+        reasonKind: 'note',
+      });
+    });
+
+    it('surfaces a child-side note once descriptions are merged', () => {
+      expect(canContain(documented('p'), documented('area'))).toStrictEqual({
+        allowed: true,
+        conditional: true,
+        reason: 'Only if there is a map element ancestor',
+        reasonKind: 'note',
+      });
+    });
+
+    it('explains element-specific parents with the parent-side note', () => {
+      // link names noscript among its conditional parents; the explanation
+      // still comes from noscript's content model, not from link's
+      // conditionalNote (which is about body placement via itemprop)
+      const check = canContain(documented('noscript'), documented('link'));
+      expect(check.reasonKind).toBe('note');
+      expect(check.reason).toBe(
+        'In head (scripting disabled): link, style, and meta elements. Outside head (scripting disabled): transparent with no noscript descendants. When scripting is enabled: text',
+      );
+    });
+
+    it('prefers a transparent note over the transparent fallback', () => {
+      const check = canContain(documented('a'), documented('div'));
+      expect(check.reasonKind).toBe('note');
+      expect(check.reason).toBe(
+        "Follows the parent's content model. Must not contain interactive content, a elements, or elements with a tabindex attribute among its descendants",
+      );
+    });
+
+    it('carries reasonKind through getParents and getChildren', () => {
+      const table = getParents(el('tr')).find(
+        (related) => related.element.tag === 'table',
+      );
+      expect(table?.reasonKind).toBe('generic');
+      expect(table?.reason).toBe(
+        'Depends on context or attributes (see the spec)',
+      );
     });
   });
 
