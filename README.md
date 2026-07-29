@@ -63,18 +63,47 @@ if (p && div) {
 
 Key exports:
 
-| Export                                | What it is                                                                        |
-| ------------------------------------- | --------------------------------------------------------------------------------- |
-| `HTML_ELEMENTS` / `HTML_ELEMENT_TAGS` | The full dataset (115 elements)                                                   |
-| `getElement(tag)`                     | Look up one element's info                                                        |
-| `canContain(parent, child)`           | Can `parent` have `child` as a direct child (`{ allowed, conditional, reason? }`) |
-| `getParents(el)` / `getChildren(el)`  | All allowed parents / children, with conditionality                               |
-| `relationOf(selected, candidate)`     | `self` / `both` / `parent` / `child` / `none`                                     |
-| `canSelfNest(el)`                     | Whether the element can nest inside itself                                        |
-| `describeAllowedContent(el)`          | Short English summary of what the element accepts                                 |
-| `CONTENT_CATEGORY_METAS`              | Content category metadata (labels per the spec)                                   |
+| Export                                        | What it is                                                                                     |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `HTML_ELEMENTS` / `HTML_ELEMENT_TAGS`         | The full dataset (115 elements), structure only                                                |
+| `getElement(tag)`                             | Look up one element's info                                                                     |
+| `canContain(parent, child)`                   | Can `parent` have `child` as a direct child (`{ allowed, conditional, reason?, reasonKind? }`) |
+| `getParents(el)` / `getChildren(el)`          | All allowed parents / children, with conditionality                                            |
+| `relationOf(selected, candidate)`             | `self` / `both` / `parent` / `child` / `none`                                                  |
+| `canSelfNest(el)`                             | Whether the element can nest inside itself                                                     |
+| `describeAllowedContent(el)`                  | Short English summary of what the element accepts                                              |
+| `applyElementDescriptions(els, descriptions)` | Merge display strings (bundled English or your own) into the dataset                           |
 
 The data model distinguishes unconditional rules, the spec's asterisked conditional cases (`conditional: true` with a `reason`), and descendant exclusions ("but with no interactive content descendants"), which `canContain` enforces for direct children.
+
+`reasonKind` says where a `reason` came from, so display layers never have to match on wording: `'note'` (a note field of the element data you passed in), `'generic'` (the built-in "Depends on context or attributes" fallback), or `'transparent'` (the built-in "`<tag>` is transparent" fallback).
+
+## Display strings and localization
+
+`HTML_ELEMENTS` is structure only — it carries no `description` and no `note` fields, so apps that localize them (or never render them) don't ship the English text. The English strings live in a separate entry point:
+
+```ts
+import { HTML_ELEMENTS, applyElementDescriptions } from '@k8o/html-nest';
+import { HTML_ELEMENT_DESCRIPTIONS } from '@k8o/html-nest/descriptions';
+
+// English dataset, as before
+const elements = applyElementDescriptions(
+  HTML_ELEMENTS,
+  HTML_ELEMENT_DESCRIPTIONS,
+);
+
+// Localized dataset: same shape, your own strings — the English set stays
+// out of the bundle because only the main entry is imported for the merge
+const localized = applyElementDescriptions(HTML_ELEMENTS, {
+  a: {
+    description: 'ハイパーリンクを表すアンカー要素',
+    contentModelNote: '...',
+  },
+  // ...
+});
+```
+
+With descriptions merged, `canContain` surfaces the matching note (in whatever language you merged) as `reason` with `reasonKind: 'note'`; without them it falls back to the built-in English fallbacks (`'generic'` / `'transparent'`). `@k8o/html-nest/descriptions` also exports `CONTENT_CATEGORY_METAS` (category labels plus English descriptions).
 
 ## Develop
 

@@ -23,7 +23,7 @@ export default defineConfig({
     ],
   },
   pack: {
-    entry: ['src/index.ts', 'src/oxlint.ts'],
+    entry: ['src/index.ts', 'src/descriptions.ts', 'src/oxlint.ts'],
     format: 'esm',
     dts: true,
     outDir: 'dist',

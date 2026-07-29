@@ -78,8 +78,9 @@ export type ElementContexts = {
 // Complete information about a single HTML element.
 export type HtmlElementInfo = {
   tag: string;
-  // Concise description of the element's role
-  description: string;
+  // Concise description of the element's role. Absent in the structure-only
+  // HTML_ELEMENTS data; merged in with applyElementDescriptions
+  description?: string;
   // Content categories the element belongs to
   categories: readonly ContentCategory[];
   // Categories the element belongs to only conditionally (the spec's asterisk)
@@ -95,4 +96,16 @@ export type HtmlElementInfo = {
   contexts: ElementContexts;
   // Whether the element is void (contentModel.kind === 'empty')
   void: boolean;
+};
+
+// Display strings for one element, keyed by tag in a record. The note fields
+// map onto contentModel.note / contexts.note / conditionalNote of
+// HtmlElementInfo; applyElementDescriptions performs the merge. The bundled
+// English set is HTML_ELEMENT_DESCRIPTIONS in the descriptions entry point;
+// localizations provide a record of the same shape.
+export type ElementDescription = {
+  description: string;
+  contentModelNote?: string;
+  contextsNote?: string;
+  conditionalNote?: string;
 };

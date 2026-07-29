@@ -37,6 +37,12 @@
         "default": "./dist/index.mjs"
       }
     },
+    "./descriptions": {
+      "import": {
+        "types": "./dist/descriptions.d.mts",
+        "default": "./dist/descriptions.mjs"
+      }
+    },
     "./oxlint": {
       "import": {
         "types": "./dist/oxlint.d.mts",

@@ -12,16 +12,38 @@ export const getElement = (tag: string): HtmlElementInfo | undefined =>
 const intersects = <T>(a: readonly T[], b: readonly T[]): boolean =>
   a.some((value) => b.includes(value));
 
+// Where a reason came from. Display layers use this to swap the package's
+// built-in English fallbacks without matching on their wording:
+// - note: taken from a note field of the element data passed in (already
+//   localized when the caller merged localized descriptions)
+// - generic: the built-in generic fallback used when no note applies
+// - transparent: the built-in "<tag> is transparent" fallback; localizations
+//   can rebuild it from the parent's tag
+export type ContainReasonKind = 'note' | 'generic' | 'transparent';
+
 export type ContainCheck = {
   allowed: boolean;
   // True when allowed only conditionally (the spec's asterisk)
   conditional: boolean;
   // Explanation of the condition when conditional=true
   reason?: string;
+  // Present exactly when reason is present
+  reasonKind?: ContainReasonKind;
 };
 
 const NOT_ALLOWED: ContainCheck = { allowed: false, conditional: false };
 const GENERIC_REASON = 'Depends on context or attributes (see the spec)';
+
+// Reason fields for a conditional result: the first defined note, or the
+// generic fallback.
+const noteReason = (
+  ...notes: ReadonlyArray<string | undefined>
+): Pick<ContainCheck, 'reason' | 'reasonKind'> => {
+  const note = notes.find((candidate) => candidate !== undefined);
+  return note === undefined
+    ? { reason: GENERIC_REASON, reasonKind: 'generic' }
+    : { reason: note, reasonKind: 'note' };
+};
 
 // Whether `parent` can have `child` as a direct child.
 // Nesting is resolved primarily by whether the parent's content model allows
@@ -51,11 +73,7 @@ export const canContain = (
       return { allowed: true, conditional: false };
     }
     if ((model.conditionalElements ?? []).includes(child.tag)) {
-      return {
-        allowed: true,
-        conditional: true,
-        reason: model.note ?? GENERIC_REASON,
-      };
+      return { allowed: true, conditional: true, ...noteReason(model.note) };
     }
     const childCategories = new Set([
       ...child.categories,
@@ -63,15 +81,22 @@ export const canContain = (
     ]);
     const flowLike =
       childCategories.has('flow') || childCategories.has('phrasing');
-    return flowLike
+    if (!flowLike) {
+      return NOT_ALLOWED;
+    }
+    return model.note === undefined
       ? {
           allowed: true,
           conditional: true,
-          reason:
-            parent.contentModel.note ??
-            `${parent.tag} is transparent; it follows its parent's content model`,
+          reason: `${parent.tag} is transparent; it follows its parent's content model`,
+          reasonKind: 'transparent',
         }
-      : NOT_ALLOWED;
+      : {
+          allowed: true,
+          conditional: true,
+          reason: model.note,
+          reasonKind: 'note',
+        };
   }
 
   // empty / none / text / foreign / varies cannot normally contain HTML
@@ -83,10 +108,14 @@ export const canContain = (
       return { allowed: true, conditional: false };
     }
     if ((child.contexts.conditionalElements ?? []).includes(parent.tag)) {
+      // The parent's note explains what this special parent accepts (link
+      // inside noscript, ...), so it wins; the child's contexts note is only
+      // a fallback. The child's conditionalNote is excluded: it explains the
+      // child's conditional categories, not this parent relation.
       return {
         allowed: true,
         conditional: true,
-        reason: parent.contentModel.note ?? GENERIC_REASON,
+        ...noteReason(model.note, child.contexts.note),
       };
     }
     // Conditional acceptance still applies to non-element content models:
@@ -99,11 +128,7 @@ export const canContain = (
         ...(child.conditionalCategories ?? []),
       ])
     ) {
-      return {
-        allowed: true,
-        conditional: true,
-        reason: model.note ?? GENERIC_REASON,
-      };
+      return { allowed: true, conditional: true, ...noteReason(model.note) };
     }
     return NOT_ALLOWED;
   }
@@ -141,12 +166,9 @@ export const canContain = (
       intersects(model.categories, childConditionalCategories) ||
       conditionalContextMatch;
     const reason = childDriven
-      ? (child.conditionalNote ??
-        child.contexts.note ??
-        model.note ??
-        GENERIC_REASON)
-      : (model.note ?? child.conditionalNote ?? GENERIC_REASON);
-    return { allowed: true, conditional: true, reason };
+      ? noteReason(child.conditionalNote, child.contexts.note, model.note)
+      : noteReason(model.note, child.conditionalNote);
+    return { allowed: true, conditional: true, ...reason };
   }
   return NOT_ALLOWED;
 };
@@ -190,6 +212,8 @@ export type RelatedElement = {
   conditional: boolean;
   // Explanation of the condition when conditional=true
   reason?: string;
+  // Present exactly when reason is present
+  reasonKind?: ContainReasonKind;
 };
 
 const byTag = (a: RelatedElement, b: RelatedElement): number =>
@@ -201,9 +225,14 @@ const toRelated = (
   element: HtmlElementInfo,
   check: ContainCheck,
 ): RelatedElement =>
-  check.reason === undefined
+  check.reason === undefined || check.reasonKind === undefined
     ? { element, conditional: check.conditional }
-    : { element, conditional: check.conditional, reason: check.reason };
+    : {
+        element,
+        conditional: check.conditional,
+        reason: check.reason,
+        reasonKind: check.reasonKind,
+      };
 
 // Elements that can contain `selected` (sorted by tag).
 export const getParents = (selected: HtmlElementInfo): RelatedElement[] =>
