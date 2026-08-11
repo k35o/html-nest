@@ -69,7 +69,7 @@
   "devDependencies": {
     "@k8o/oxc-config": "0.1.3",
     "@types/node": "26.1.1",
-    "typescript": "6.0.3",
+    "typescript": "7.0.2",
     "vite-plus": "0.2.4"
   },
   "engines": {
