@@ -242,7 +242,7 @@ export const getParents = (selected: HtmlElementInfo): RelatedElement[] =>
     }
     const check = canContain(candidate, selected);
     return check.allowed ? [toRelated(candidate, check)] : [];
-  }).sort(byTag);
+  }).toSorted(byTag);
 
 // Elements that `selected` can contain (sorted by tag).
 export const getChildren = (selected: HtmlElementInfo): RelatedElement[] =>
@@ -252,7 +252,7 @@ export const getChildren = (selected: HtmlElementInfo): RelatedElement[] =>
     }
     const check = canContain(selected, candidate);
     return check.allowed ? [toRelated(candidate, check)] : [];
-  }).sort(byTag);
+  }).toSorted(byTag);
 
 // Whether the element can nest inside itself (div in div, ...).
 export const canSelfNest = (selected: HtmlElementInfo): ContainCheck =>
