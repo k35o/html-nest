@@ -3,6 +3,17 @@ blockExoticSubdeps: true
 minimumReleaseAge: 10080
 minimumReleaseAgeExclude:
   - '@k8o/*'
+  # vite-plus 0.2.9 adds TypeScript 7 support; adopted ahead of the age gate
+  - vite-plus@0.2.9
+  - '@voidzero-dev/vite-plus-core@0.2.9'
+  - '@voidzero-dev/vite-plus-darwin-arm64@0.2.9'
+  - '@voidzero-dev/vite-plus-darwin-x64@0.2.9'
+  - '@voidzero-dev/vite-plus-linux-arm64-gnu@0.2.9'
+  - '@voidzero-dev/vite-plus-linux-arm64-musl@0.2.9'
+  - '@voidzero-dev/vite-plus-linux-x64-gnu@0.2.9'
+  - '@voidzero-dev/vite-plus-linux-x64-musl@0.2.9'
+  - '@voidzero-dev/vite-plus-win32-arm64-msvc@0.2.9'
+  - '@voidzero-dev/vite-plus-win32-x64-msvc@0.2.9'
 
 strictDepBuilds: true
 
