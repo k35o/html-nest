@@ -67,8 +67,8 @@
     "prepare": "vp config"
   },
   "devDependencies": {
-    "@k8o/oxc-config": "0.1.3",
-    "@types/node": "26.1.1",
+    "@k8o/oxc-config": "0.3.0",
+    "@types/node": "26.2.0",
     "typescript": "7.0.2",
     "vite-plus": "0.2.9"
   },
