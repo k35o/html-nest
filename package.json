@@ -75,7 +75,7 @@
   "engines": {
     "node": ">=24.13.0"
   },
-  "packageManager": "pnpm@12.4.2",
+  "packageManager": "pnpm@12.5.0",
   "pnpm": {
     "overrides": {
       "vite": "npm:@voidzero-dev/vite-plus-core@latest",
