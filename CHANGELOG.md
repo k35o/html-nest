@@ -1,5 +1,11 @@
 # @k8o/html-nest
 
+## 0.2.1
+
+### Patch Changes
+
+- Relax `engines.node` from `>=24.13.0` to `>=24`, so the package installs on any Node.js 24 or later. Development moves to Node.js 26.13.1 in `mise.toml`. 26.13.1 is the November 11, 2026 security release: it fixes seven high-severity HTTP/2 and TLS vulnerabilities that earlier 24.x and 26.x releases still carry.
+
 ## 0.2.0
 
 ### Minor Changes
