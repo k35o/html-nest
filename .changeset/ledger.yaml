@@ -10,3 +10,7 @@
   dir: ""
   intents:
     - split-display-strings
+"@k8o/html-nest@0.2.1":
+  dir: ""
+  intents:
+    - node-26-13-1
